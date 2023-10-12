@@ -3,6 +3,7 @@
 // ONLY FOR CLIENT APPLICATION
 
 #include "Engine/Application.h"
+#include "Engine/Log.h"
 
 // _--------Entry Point---------
 
