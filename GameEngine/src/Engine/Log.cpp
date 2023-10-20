@@ -1,3 +1,4 @@
+#include "GameEnginepch.h"
 #include "Log.h"
 
 namespace GameEngine {
