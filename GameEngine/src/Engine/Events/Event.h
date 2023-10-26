@@ -10,7 +10,7 @@ namespace GameEngine {
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
 		AppTick, AppUpdate, AppRender,
-		KeyPressed, KeyReleased,
+		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
@@ -32,7 +32,6 @@ namespace GameEngine {
 
 	class GE_API Event
 	{
-		friend class EventDispather;
 	public:
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
@@ -43,6 +42,7 @@ namespace GameEngine {
 		{
 			return GetCategoryFlags() & category;
 		}
+
 		bool m_Handled = false;
 	};
 

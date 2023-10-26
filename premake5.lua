@@ -13,9 +13,13 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "GameEngine/vendor/GLFW/include"
 IncludeDir["Glad"] = "GameEngine/vendor/Glad/include"
+IncludeDir["ImGui"] = "GameEngine/vendor/imgui"
 
 include "GameEngine/vendor/GLFW"
 include "GameEngine/vendor/Glad"
+include "GameEngine/vendor/imgui"
+
+
 
 
 project "GameEngine"
@@ -42,13 +46,15 @@ project "GameEngine"
         "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include",
         "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}"
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.ImGui}"
     }
 
     links
     {
         "GLFW",
         "Glad",
+        "imgui",
         "opengl32.lib"
     }
 
@@ -61,6 +67,7 @@ project "GameEngine"
             "GE_PLATFORM_WINDOWS",
             "GE_BUILD_DLL",
             "_WINDLL",
+            "GE_ENABLE_ASSERTS",
             "GLFW_INCLUDE_NONE"
         }
 
@@ -71,7 +78,7 @@ project "GameEngine"
 
     filter "configurations:Debug"
         defines "GE_DEBUG"
-        buildoptions "/MD"
+        buildoptions "/MDd"
         symbols "On"
 
     filter "configurations:Release"
@@ -102,7 +109,9 @@ project "Sandbox"
     includedirs 
     {
         "GameEngine/vendor/spdlog/include",
-        "GameEngine/src"
+        "GameEngine/src",
+        "GameEngine/vendor"
+
     }
 
     links
@@ -121,7 +130,7 @@ project "Sandbox"
 
     filter "configurations:Debug"
         defines "GE_DEBUG"
-        buildoptions "/MD"
+        buildoptions "/MDd"
         symbols "On"
 
     filter "configurations:Release"

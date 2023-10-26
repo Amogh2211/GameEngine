@@ -22,7 +22,7 @@ project "Glad"
 
 	
 	filter "system:windows"
-		systemversion "latest"
+		systemversion "10.0.22000.0"
 		staticruntime "On"
 
 	filter "configurations:Release"

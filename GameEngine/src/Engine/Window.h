@@ -3,7 +3,6 @@
 #include "GameEnginepch.h"
 
 #include "Engine/Core.h"
-#include "Engine/Events/Event.h"
 #include "Events/Event.h"
 
 namespace GameEngine {
@@ -39,6 +38,8 @@ namespace GameEngine {
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
+
+		virtual void* GetNativeWindow() const = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};
