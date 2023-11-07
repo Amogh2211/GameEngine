@@ -1,12 +1,16 @@
 #pragma once
 
 #ifdef GE_PLATFORM_WINDOWS
+#if GE_DYNAMIC_LINK
 	#ifdef GE_BUILD_DLL
 		#define GE_API __declspec(dllexport)
 	#else
 		#define GE_API __declspec(dllimport)
 	#endif 
 #else 
+#define GE_API
+#endif
+#else
 	#error Only Windows is supported
 #endif
 

@@ -4,6 +4,7 @@
 
 // Stolen from GLFW KEY CODES
 // check glfw3.h for reference
+// Need conversions to be compatible with windows.
 
 
 /* Printable keys */

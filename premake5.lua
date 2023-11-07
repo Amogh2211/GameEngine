@@ -1,5 +1,6 @@
 workspace "GameEngine"
     architecture "x64"
+    startproject "Sandbox"
     
     configurations
     {
@@ -14,6 +15,8 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "GameEngine/vendor/GLFW/include"
 IncludeDir["Glad"] = "GameEngine/vendor/Glad/include"
 IncludeDir["ImGui"] = "GameEngine/vendor/imgui"
+IncludeDir["glm"] = "GameEngine/vendor/GLM"
+
 
 include "GameEngine/vendor/GLFW"
 include "GameEngine/vendor/Glad"
@@ -21,11 +24,11 @@ include "GameEngine/vendor/imgui"
 
 
 
-
 project "GameEngine"
     location "GameEngine"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
+    staticruntime "on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -38,16 +41,25 @@ project "GameEngine"
     files
     {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/src/**.cpp", 
+        "%{prj.name}/vendor/**.hpp",
+        "%{prj.name}/vendor/**.inl"
+    }
+
+    defines
+    {
+        "_CRT_SECURE_NO_WARNINGS"
     }
 
     includedirs
     {
         "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include",
+        "%{prj.name}/vendor",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
-        "%{IncludeDir.ImGui}"
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.glm}",
     }
 
     links
@@ -94,8 +106,8 @@ project "GameEngine"
 project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
-
     language "C++"
+    staticruntime "on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "%{prj.name}")
@@ -104,14 +116,15 @@ project "Sandbox"
     {
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp",
+        
     }
 
     includedirs 
     {
         "GameEngine/vendor/spdlog/include",
         "GameEngine/src",
-        "GameEngine/vendor"
-
+        "GameEngine/vendor",
+        "%{IncludeDir.glm}"
     }
 
     links

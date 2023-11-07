@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameEnginepch.h"
+#include "Engine/Log.h"
 #include "../Core.h"
 
 
