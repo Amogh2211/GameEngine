@@ -12,7 +12,7 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Buffer.h"
 #include "Engine/Renderer/VertexArray.h"
-#include "Engine/Renderer/OrthographicCamera.h"
+
 
 
 namespace GameEngine {
@@ -23,7 +23,7 @@ namespace GameEngine {
 		Application();
 		virtual ~Application();
 
-		void Run();
+		void Run();	
 		void OnEvent(Event& e);
 
 		void PushLayer(Layer* layer);
@@ -43,10 +43,9 @@ namespace GameEngine {
 		std::shared_ptr<Shader> m_Shader;
 		std::shared_ptr<VertexArray> m_VertexArray;
 
-		std::shared_ptr<Shader> m_SquareShader;
+		std::shared_ptr<Shader> m_BlueShader;
 		std::shared_ptr<VertexArray> m_SquareVA;
 
-		OrthographicCamera m_Camera;
 
 	private:
 		static Application* s_Instance;
