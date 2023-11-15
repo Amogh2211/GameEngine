@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "Buffer.h"
+#include <vector>
 
 namespace GameEngine {
 

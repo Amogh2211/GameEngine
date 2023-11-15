@@ -1,11 +1,16 @@
 
 #include "Engine.h"
+#include "Platform/OpenGL/OpenGLShader.h"
+
 #include "imgui/imgui.h"
+#include "GLM/gtc/matrix_transform.hpp"
+#include <GLM/gtc/type_ptr.hpp>
+#include "Engine/Renderer/Shader.h"
 
 class ExampleLayer : public GameEngine::Layer {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-2.0f, 2.0f, -2.0f, 2.0f), m_CameraPosition(0.0f)
+		: Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
 	{
 
 
@@ -36,17 +41,18 @@ public:
 
 		m_SquareVA.reset(GameEngine::VertexArray::Create());
 
-		float squareVertices[3 * 4] = {
-			-0.75f, -0.75f, 0.0f,
-			0.75f, -0.75f, 0.0f,
-			0.75f, 0.75f, 0.0f,
-			-0.75f, 0.75f, 0.0f
+		float squareVertices[5 * 4] = {
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
 		};
 
 		std::shared_ptr<GameEngine::VertexBuffer> squareVB;
 		squareVB.reset(GameEngine::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 		squareVB->SetLayout({
-			{ GameEngine::ShaderDataType::Float3, "a_Position" }
+			{ GameEngine::ShaderDataType::Float3, "a_Position" },
+			{ GameEngine::ShaderDataType::Float2, "a_TextCoord" }
 			});
 		m_SquareVA->AddVertexBuffer(squareVB);
 
@@ -64,6 +70,7 @@ public:
 			layout(location = 1) in vec4 a_Color;
 
 			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
 
 			out vec3 v_Position;
 			out vec4 v_Color;
@@ -72,7 +79,7 @@ public:
 			{
 				v_Position = a_Position;
 				v_Color = a_Color;
-				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * u_Transform *  vec4(a_Position, 1.0);
 			}
 		)";
 
@@ -91,79 +98,93 @@ public:
 			}
 		)";
 
-		m_Shader.reset(new GameEngine::Shader(vertexSrc, fragmentSrc));
+		m_Shader = GameEngine::Shader::Create("VertexPosTriangle" , vertexSrc, fragmentSrc);
 
+		
 
-		std::string BlueShaderVertexSrc = R"(
+		std::string FlatColourShaderVertexSrc = R"(
 			#version 330 core
 			
 			layout(location = 0) in vec3 a_Position;
 			
 			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
 
 			out vec3 v_Position;
 
 			void main()
 			{
 				v_Position = a_Position;
-				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
 			}
 		)";
 
-		std::string BlueShaderFragmentSrc = R"(
+		std::string FlatColourShaderFragmentSrc = R"(
 			#version 330 core
 			
 			layout(location = 0) out vec4 color;
 
 			in vec3 v_Position;
 
+			uniform vec3 u_Colour;
+
 			void main()
 			{
-				color = vec4(0.25, 0., 1, 1.0);
+				color = vec4(u_Colour, 1.0f);
 			}
 		)";
 
-		m_BlueShader.reset(new GameEngine::Shader(BlueShaderVertexSrc, BlueShaderFragmentSrc));
+		m_FlatColourShader = GameEngine::Shader::Create("FlatColour" , FlatColourShaderVertexSrc, FlatColourShaderFragmentSrc);
+
+
+		//// NEW SHADER /////
+
+		
+
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
+
+		m_Texture = (GameEngine::Texture2D::Create("assets/textures/Checkerboard.png"));
+		m_ChernoTexture = (GameEngine::Texture2D::Create("assets/textures/ChernoLogo.png"));
+
+		std::dynamic_pointer_cast<GameEngine::OpenGLShader>(textureShader)->Bind();
+		std::dynamic_pointer_cast<GameEngine::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
-	void OnUpdate() override {
+	void OnUpdate(GameEngine::Timestep ts) override {
 		// GE_INFO("ExampleLayer::Update");
 
-		if (GameEngine::Input::IsKeyPressed(GE_KEY_LEFT) ) {
-			m_CameraPosition.x -= m_CameraMoveSpeed;
-		}
+		m_CameraController.OnUpdate(ts);
 
-		else if (GameEngine::Input::IsKeyPressed(GE_KEY_RIGHT)) {
-			m_CameraPosition.x += m_CameraMoveSpeed;
-		}
-
-
-		if (GameEngine::Input::IsKeyPressed(GE_KEY_DOWN)) {
-			m_CameraPosition.y -= m_CameraMoveSpeed;
-		}
-		else if (GameEngine::Input::IsKeyPressed(GE_KEY_UP)) {
-			m_CameraPosition.y += m_CameraMoveSpeed;
-		}
-
-		if (GameEngine::Input::IsKeyPressed(GE_KEY_E)) {
-			m_CameraRotation -= m_CameraRotationSpeed;
-		}
-		if (GameEngine::Input::IsKeyPressed(GE_KEY_Q)) {
-			m_CameraRotation += m_CameraRotationSpeed;
-		}
 
 		GameEngine::RenderCommand::SetClearColor({ (float)15 / 255, (float)15 / 255, (float)15 / 255, 1 });
 		GameEngine::RenderCommand::Clear();
 
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
+		GameEngine::Renderer::BeginScene(m_CameraController.GetCamera());
 
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-		GameEngine::Renderer::BeginScene(m_Camera);
+		std::dynamic_pointer_cast<GameEngine::OpenGLShader>(m_FlatColourShader)->Bind();
+		std::dynamic_pointer_cast<GameEngine::OpenGLShader>(m_FlatColourShader)->UploadUniformFloat3("u_Colour", m_SquareColour);
 
-		GameEngine::Renderer::Submit(m_SquareVA, m_BlueShader);
-		GameEngine::Renderer::Submit(m_VertexArray, m_Shader);
+		// GRID RENDER
+		for (int y = 0; y < 20; ++y) {
+			for (int x = 0; x < 20; x++) {
+				glm::vec3 position(x * 0.11f, y * 0.11f, 0.0f);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * scale;
+				GameEngine::Renderer::Submit(m_SquareVA, m_FlatColourShader, transform);	
+			}
+
+		}
+
+		auto textureShader = m_ShaderLibrary.Get("Texture");
+
+		m_Texture->Bind();
+		GameEngine::Renderer::Submit(m_SquareVA, textureShader, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		m_ChernoTexture->Bind();
+		GameEngine::Renderer::Submit(m_SquareVA, textureShader, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		// TRIANGLE RENDER
+		//GameEngine::Renderer::Submit(m_VertexArray, m_Shader);
 
 		GameEngine::Renderer::EndScene();
 	}
@@ -171,28 +192,32 @@ public:
 	
 	void OnEvent(GameEngine::Event& event) override
 	{
+		m_CameraController.OnEvent(event);
 		
 	}
 
 
 
 	virtual void OnImGuiRender() override {
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Square Colour", glm::value_ptr(m_SquareColour));
+		ImGui::End();
 	}
 
 private:
+
+	GameEngine::ShaderLibrary m_ShaderLibrary;
 	std::shared_ptr<GameEngine::Shader> m_Shader;
 	std::shared_ptr<GameEngine::VertexArray> m_VertexArray;
 
-	std::shared_ptr<GameEngine::Shader> m_BlueShader;
+	std::shared_ptr<GameEngine::Shader> m_FlatColourShader;
 	std::shared_ptr<GameEngine::VertexArray> m_SquareVA;
 
-	GameEngine::OrthographicCamera m_Camera;
+	std::shared_ptr<GameEngine::Texture2D> m_Texture, m_ChernoTexture;
 
-	glm::vec3 m_CameraPosition;
-	float m_CameraMoveSpeed = 0.01f;
+	GameEngine::OrthographicCameraController m_CameraController;
 
-	float m_CameraRotation = 0.0f;
-	float m_CameraRotationSpeed = 0.01f;
+	glm::vec3 m_SquareColour = { 0.2f, 0.3f, 0.4f };
 };
 
 class Sandbox : public GameEngine::Application {

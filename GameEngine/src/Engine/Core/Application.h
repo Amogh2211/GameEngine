@@ -1,9 +1,10 @@
 #pragma once
 #include "Core.h"
 #include "Window.h"
+#include "Engine/Core/Timestep.h"
 
 // Events includes
-#include "Engine/LayerStack.h"
+#include "Engine/Core/LayerStack.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Events/ApplicationEvent.h"
 #include "Engine/ImGui/ImGuiLayer.h"
@@ -34,17 +35,18 @@ namespace GameEngine {
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
+
+	private:
+		float m_LastFrameTime = 0.0f;
+
 
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
+		bool m_Minimized = false;
+
 		LayerStack m_LayerStack;
-
-		std::shared_ptr<Shader> m_Shader;
-		std::shared_ptr<VertexArray> m_VertexArray;
-
-		std::shared_ptr<Shader> m_BlueShader;
-		std::shared_ptr<VertexArray> m_SquareVA;
 
 
 	private:

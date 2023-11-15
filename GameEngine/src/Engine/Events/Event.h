@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GameEnginepch.h"
-#include "Engine/Log.h"
-#include "../Core.h"
+#include "Engine/Core/Log.h"
+#include "../Core/Core.h"
 
 
 namespace GameEngine {

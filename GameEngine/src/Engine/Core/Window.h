@@ -2,8 +2,8 @@
 
 #include "GameEnginepch.h"
 
-#include "Engine/Core.h"
-#include "Events/Event.h"
+#include "Engine/Core/Core.h"
+#include "Engine/Events/Event.h"
 
 namespace GameEngine {
 

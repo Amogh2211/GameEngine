@@ -10,7 +10,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include "Engine/Application.h"
+#include "Engine/Core/Application.h"
 // Debug draw layer. Calls last on 3d Scene
 
 namespace GameEngine {
