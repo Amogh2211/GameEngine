@@ -10,8 +10,9 @@ namespace GameEngine {
 
 	struct Renderer2DStore {
 		std::shared_ptr<VertexArray> QuadVertexArray;
-		std::shared_ptr<Shader> flatColourShader;
+
 		std::shared_ptr<Shader> textureShader;
+		std::shared_ptr<Texture2D> whiteTexture;
 
 	};
 
@@ -42,7 +43,10 @@ namespace GameEngine {
 		squareIB.reset(IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		s_Data->QuadVertexArray->SetIndexBuffer(squareIB);
 
-		s_Data->flatColourShader = Shader::Create("assets/shaders/FlatColourShader.glsl");
+		s_Data->whiteTexture = Texture2D::Create(1, 1);
+		uint32_t whiteTextureData = 0xffffffff;
+		s_Data->whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		
 		s_Data->textureShader = Shader::Create("assets/shaders/Texture.glsl");
 		s_Data->textureShader->Bind();
 		s_Data->textureShader->SetInt("u_Texture", 0);
@@ -53,8 +57,6 @@ namespace GameEngine {
 	 }
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera) {
-		(s_Data->flatColourShader)->Bind();
-		(s_Data->flatColourShader)->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 		
 		(s_Data->textureShader)->Bind();
 		(s_Data->textureShader)->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
@@ -72,11 +74,13 @@ namespace GameEngine {
 
 	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& colour) {
 
-		s_Data->flatColourShader->Bind();
-		(s_Data->flatColourShader)->SetFloat4("u_Color", colour);
-		
+		(s_Data->textureShader)->SetFloat4("u_Color", colour);
+		// Bind white here
+		s_Data->whiteTexture->Bind();
+
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
-		(s_Data->flatColourShader)->SetMat4("u_Transform", transform);
+		(s_Data->textureShader)->SetMat4("u_Transform", transform);
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
@@ -87,12 +91,15 @@ namespace GameEngine {
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture) {
-		s_Data->textureShader->Bind();
+		(s_Data->textureShader)->SetFloat4("u_Color", glm::vec4(1.0f));
+		texture->Bind();
+
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 		(s_Data->textureShader)->SetMat4("u_Transform", transform);
 
-		texture->Bind();
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+		//texture->UnBind();
 	}
 }
