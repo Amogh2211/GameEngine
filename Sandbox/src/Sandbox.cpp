@@ -1,20 +1,26 @@
 
 #include "Engine.h"
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Engine/Core/EntryPoint.h"
 
+
+#include "Platform/OpenGL/OpenGLShader.h"
 #include "imgui/imgui.h"
+
 #include "GLM/gtc/matrix_transform.hpp"
 #include <GLM/gtc/type_ptr.hpp>
+
 #include "Engine/Renderer/Shader.h"
+
+#include "Sandbox2D.h"
 
 class ExampleLayer : public GameEngine::Layer {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
+		: Layer("Example"), m_CameraController(1280.0f / 720.0f)
 	{
 
 
-		m_VertexArray.reset(GameEngine::VertexArray::Create());
+		m_VertexArray = GameEngine::VertexArray::Create();
 		float vertices[3 * 7] = {
 			-0.5f, -0.5f, 0.0f,  /* a_Color */  1.0f, 0.25f, 0.25f, 1.0f,
 			0.5f, -0.5f, 0.0f,   /* a_Color */  0.25f, 1.0f, 0.25f, 1.0f,
@@ -39,7 +45,7 @@ public:
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 
-		m_SquareVA.reset(GameEngine::VertexArray::Create());
+		m_SquareVA = GameEngine::VertexArray::Create();
 
 		float squareVertices[5 * 4] = {
 			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
@@ -223,7 +229,8 @@ private:
 class Sandbox : public GameEngine::Application {
 public:
 	Sandbox() {
-		PushLayer(new ExampleLayer());
+		// PushLayer(new ExampleLayer());
+		PushLayer(new Sandbox2D());
 		//PushLayer(new GameEngine::ImGuiLayer());
 	}
 	~Sandbox() {
