@@ -30,12 +30,12 @@ namespace GameEngine {
 		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
 
 		auto lastDot = filepath.rfind(".");
-		
+
 		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filepath.substr(lastSlash, count);
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) 
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
 		: m_Name(name) {
 		std::unordered_map<GLenum, std::string> sources;
 		sources[GL_VERTEX_SHADER] = vertexSrc;
@@ -68,7 +68,7 @@ namespace GameEngine {
 	}
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source) {
-		
+
 		std::unordered_map<GLenum, std::string> shaderSources;
 
 		const char* typeToken = "#type";
@@ -87,14 +87,14 @@ namespace GameEngine {
 			pos = source.find(typeToken, nextLinePos);
 			shaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
-		return shaderSources;	
+		return shaderSources;
 	}
 
 	void OpenGLShader::Compile(std::unordered_map<GLenum, std::string>& shaderSources) {
-		
+
 		GLuint program = glCreateProgram();
 		GE_CORE_ASSERT((int)shaderSources.size() <= 2, "Too many shader sources. Only supports 2");
-		
+
 		std::array<GLenum, 2> glShaderID;
 		int glShaderIDIndex = 0;
 
@@ -157,7 +157,7 @@ namespace GameEngine {
 			for (auto& key : glShaderID) {
 				glDeleteShader(key);
 			}
-		
+
 
 			GE_CORE_ERROR("{0}", infoLog.data());
 			GE_CORE_ASSERT(false, "Linking error.");
@@ -165,19 +165,34 @@ namespace GameEngine {
 		}
 
 		// Always detach shaders after a successful link.
-		for(auto& key : glShaderID)
+		for (auto& key : glShaderID)
 			glDetachShader(program, key);
-	
+
 		m_RendererID = program;
 	}
 
-	
+
 	void OpenGLShader::Bind() const {
 		glUseProgram(m_RendererID);
 	}
 
 	void OpenGLShader::ShaderUnbind() const {
 		glUseProgram(0);
+	}
+
+	void OpenGLShader::SetInt(const std::string& name, int value) {
+		UploadUniformInt(name, value);
+	}
+
+	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value) {
+		UploadUniformFloat3(name, value);
+	}
+	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value) {
+		UploadUniformFloat4(name, value);
+	}
+
+	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value) {
+		UploadUniformMat4(name, value);
 	}
 
 	void OpenGLShader::UploadUniformInt(const std::string& name, int values) {
