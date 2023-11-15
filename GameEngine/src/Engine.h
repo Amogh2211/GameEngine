@@ -16,6 +16,7 @@
 // RENDERER
 #include "Engine/Renderer/OrthographicCameraController.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/RendererAPI.h"
 
