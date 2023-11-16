@@ -8,7 +8,7 @@ Clone the repository with `git clone --https:://github.com/Amogh2211/GameEngine`
 
 If repo was cloned non recursively before, use `git submodule update --init` to clone the necessary submodules.
 
-###2. Pre requisites
+### 2. Pre requisites
 
 One of the main pre requisites is Premake5. This creates the visual studio solution for you to run the project. 
 Run the [GenerateProjects.bat](https://github.com/Amogh2211/GameEngine/blob/main/scripts/GenerateProjects.bat) file to run Premake.
